@@ -1,0 +1,16 @@
+# ide related
+.idea/
+
+# cache
+*.pyc
+__pycache__
+
+# poetry related
+Lib/
+Scripts/
+pyvenv.cfg
+
+# build related
+*.whl
+dist
+*.egg-info
