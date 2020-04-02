@@ -1,11 +1,17 @@
 [tool.poetry]
 name = "simpleelf"
-version = "0.1.0"
+version = "0.1.2"
 description = "Simple ELF parser and builder"
 authors = ["DoronZ <doron88@gmail.com>"]
+homepage = "https://github.com/doronz88/simpleelf"
+repository = "https://github.com/doronz88/simpleelf"
+documentation = "https://github.com/doronz88/simpleelf"
+packages = [
+    { include = "simpleelf/*.py" }
+]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.6"
 construct = "^2.10.56"
 
 [tool.poetry.dev-dependencies]

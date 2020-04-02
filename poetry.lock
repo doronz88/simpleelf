@@ -10,8 +10,8 @@ version = "2.10.56"
 extras = ["enum34", "numpy", "arrow", "ruamel.yaml"]
 
 [metadata]
-content-hash = "4c7453853c05a370633c0b1d97059fa829d097c3bdbc1df736621546a2d97a8f"
-python-versions = "^3.8"
+content-hash = "9888b507cd444d1013c7041feedcb88d1c6c7b52eeba8187c12d62f6db689103"
+python-versions = "^3.6"
 
 [metadata.files]
 construct = [
