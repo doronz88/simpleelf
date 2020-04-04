@@ -47,27 +47,29 @@ from simpleelf import elf_consts
 e = ElfBuilder()
 e.set_endianity('>')
 
-# will create a segment containing the section if not currently exists
-text_start = 0x1234
-text_buffer = b'cybercyberbitimbitim'
-e.add_code_section('.text', text_start, text_buffer)
+code = b'CODECODE'
 
-# will create a NOTBITS section
-data_address = 0x5678
-data_size = 0x200
-e.add_empty_data_section('.data', data_address, data_size)
+# add a segment
+text_address = 0x1234
+text_buffer = b'cybercyberbitimbitim' + code
+e.add_segment(text_address, text_buffer, 
+    elf_consts.PF_R | elf_consts.PF_W | elf_consts.PF_X)
 
-# set entry point
-e.set_entry(text_start)
+# add a second segment
+e.add_segment(0x88771122, b'data in 0x88771122', 
+    elf_consts.PF_R | elf_consts.PF_W | elf_consts.PF_X)
 
-# set machine type
-e.set_machine(elf_consts.EM_PPC)
+# add a code section inside the first segment
+code_address = text_address + text_buffer.find(code)  # point at CODECODE
+code_size = len(code)
+e.add_code_section('.text', code_address, code_size)
 
-# adding just some additional segment. not assining a section to it.
-e.add_segment(0xff000000, 
-    elf_consts.PF_R | elf_consts.PF_W | elf_consts.PF_X, 
-    0x2000)
+# add .bss section. not requiring a loaded segment from
+# file
+bss_address = 0x5678
+bss_size = 0x200
+e.add_empty_data_section('.bss', bss_address, bss_size)
 
-# outputs a buffer of the desired ELF file
-e.build() 
+# get raw elf
+e.build()
 ```

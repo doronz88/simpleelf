@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simpleelf"
-version = "0.1.2"
+version = "0.1.3"
 description = "Simple ELF parser and builder"
 authors = ["DoronZ <doron88@gmail.com>"]
 homepage = "https://github.com/doronz88/simpleelf"
@@ -13,6 +13,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.6"
 construct = "^2.10.56"
+pytest = "^5.4.1"
 
 [tool.poetry.dev-dependencies]
 

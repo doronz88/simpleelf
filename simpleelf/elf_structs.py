@@ -295,6 +295,8 @@ class ElfStructs:
             'p_memsz' / Hex(Int32u),
             'p_flags' / Hex(Int32u),
             'p_align' / Hex(Int32u),
+            'data' / If(this.p_type == self.Elf_SegmentType.PT_LOAD,
+                Pointer(this.p_offset, Bytes(this.p_filesz)))
         )
 
         self.Elf32_Ehdr = Struct(
