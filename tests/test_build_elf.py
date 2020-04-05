@@ -32,6 +32,9 @@ def test_build_elf():
     code_size = len(code)
     e.add_code_section('.text', code_address, code_size)
 
+    # set entry point
+    e.set_entry(code_address)
+
     # add .bss section. not requiring a loaded segment from
     # file
     bss_address = 0x5678
