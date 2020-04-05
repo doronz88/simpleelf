@@ -4,7 +4,7 @@ import pytest
 from simpleelf.elf_builder import ElfBuilder, ElfStructs
 from simpleelf import elf_consts
 
-structs = ElfStructs('>')
+structs = ElfStructs('<')
 
 
 def verify_in_readelf(filename, output):
@@ -12,7 +12,8 @@ def verify_in_readelf(filename, output):
 
 def test_build_elf():
     e = ElfBuilder()
-    e.set_endianity('>')
+    e.set_endianity('<')
+    e.set_machine(elf_consts.EM_ARM)
 
     code = b'CODECODE'
 

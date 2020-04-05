@@ -45,7 +45,8 @@ from simpleelf.elf_builder import ElfBuilder
 from simpleelf import elf_consts
 
 e = ElfBuilder()
-e.set_endianity('>')
+e.set_endianity('<')
+e.set_machine(elf_consts.EM_ARM)
 
 code = b'CODECODE'
 
