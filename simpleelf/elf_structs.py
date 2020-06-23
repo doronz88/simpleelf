@@ -1,6 +1,7 @@
 from construct import *
 from simpleelf import elf_consts
 
+
 class ElfStructs:
     def __init__(self, endianity='<'):
         if endianity == '<':
