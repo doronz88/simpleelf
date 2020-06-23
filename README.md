@@ -4,7 +4,8 @@ a program's layout in memory. The original intention of this project is to
 allow an individual to create an ELF file which describes the memory mapping
 used for an embedded program. Especially useful for firmware unpackers, such as:
 IDA/Ghidra/etc... They can have all its desired information without the need to
-open just an ordinary `.bin` file and running several IDAPython scripts.
+open just an ordinary `.bin` file and running several IDAPython scripts
+(I'm sick of `Load additional binary file...` option).
 
 # Installation
 
@@ -14,31 +15,12 @@ Use `pip`:
 python3 -m pip install simpleelf
 ```
 
-Or build from sources.
-
-# Building
-
-## Requirements
-
-The easiest way to manage the requirements for this project is using `poetry`.
-If you don't already have it installed, run:
+Or from the sources from sources:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-```
-
-Then inside the directory of this project, run
-
-```bash
-poetry install
-```
-
-Now you can start developement.
-
-In order to install use:
-```bash
-poerty build
-python3 -m pip install dist/*.egg
+git clone git@github.com:doronz88/simpleelf.git
+cd simpleelf
+python setup.py install
 ```
 
 # Running

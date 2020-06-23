@@ -13,4 +13,5 @@ pyvenv.cfg
 # build related
 *.whl
 dist
+build
 *.egg-info
