@@ -11,6 +11,8 @@ Pull Requests are of course more than welcome :smirk:.
 
 # Installation
 
+Support: Python 2.7 and Python 3.x.
+
 Use `pip`:
 
 ```bash
