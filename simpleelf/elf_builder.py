@@ -28,7 +28,6 @@ class ElfBuilder:
         self.add_section(self._structs.Elf_SectionType.SHT_NULL, 0,
             0, 0, 0)
 
-
     def set_endianity(self, endianity):
         self._endianity = endianity
         self._structs = ElfStructs(endianity)        
@@ -43,7 +42,7 @@ class ElfBuilder:
 
         self._segments.append(segment)
 
-    def find_loaded_data(self, address):
+    def find_loaded_data(self, address, size=None):
         offset = self._e_phoff
         data = None
 
@@ -61,6 +60,9 @@ class ElfBuilder:
 
         if data is None:
             return None
+
+        if size is not None:
+            data = data[:size]
 
         return offset, data
 
@@ -142,8 +144,6 @@ class ElfBuilder:
 
         # add segments
         segment_data_offset = self._e_phoff + self._e_phnum * self._e_phentsize
-        # print(hex(segment_data_offset))
-        # fsdfds
 
         for segment in self._segments:
             elf['segments'].append({
@@ -173,7 +173,7 @@ class ElfBuilder:
 
             if section.type == self._structs.Elf_SectionType.SHT_PROGBITS:
                 size = section.size
-                offset, contents = self.find_loaded_data(section.address)
+                offset, contents = self.find_loaded_data(section.address, size)
             else:  
                 # every non-loaded data into memory, which resides only in ELF
                 # will be pointed by `end_of_segments_offset`.
