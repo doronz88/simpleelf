@@ -2,7 +2,8 @@
 ELF file is not only an executable, but a very convenient way to describe 
 a program's layout in memory. The original intention of this project is to 
 allow an individual to create an ELF file which describes the memory mapping
-used for an embedded program. Especially useful for firmware unpackers, such as:
+used for an embedded program. Especially useful for using together with other 
+analysis tools, such as:
 IDA/Ghidra/etc... They can have all its desired information without the need to
 open just an ordinary `.bin` file and running several IDAPython scripts
 (I'm sick of `Load additional binary file...` option).
