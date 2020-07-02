@@ -2,13 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='simpleelf',
-    version='0.1.8',
+    version='0.1.9',
     description='Simple ELF parser and builder',
     author='DoronZ',
     author_email='doron88@gmail.com',
     url='https://github.com/doronz88/simpleelf',
     packages=find_packages(),
-    install_requires=['construct>=2.10.54',
-                      'pytest>=^4.6.10'],
+    install_requires=['construct>=2.10.54'],
     python_requires='>=2.7'
 )
