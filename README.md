@@ -22,7 +22,7 @@ Use `pip`:
 python3 -m pip install simpleelf
 ```
 
-Or from the sources from sources:
+Or clone yourself and build:
 
 ```bash
 git clone git@github.com:doronz88/simpleelf.git
