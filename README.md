@@ -1,3 +1,5 @@
+![Python package](https://github.com/doronz88/simpleelf/workflows/Python%20package/badge.svg)
+
 # Introduction
 ELF file is not only an executable, but a very convenient way to describe 
 a program's layout in memory. The original intention of this project is to 
