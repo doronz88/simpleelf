@@ -1,13 +1,15 @@
 from collections import namedtuple
 
-from construct import *
+from construct import Padding
 
 from simpleelf.elf_structs import ElfStructs
 from simpleelf import elf_consts
 
+
 class ElfBuilder:
     Segment = namedtuple('Segment', ['address', 'flags', 'contents'])
-    Section = namedtuple('Section', ['type', 'name', 'address', 'flags', 'size'])
+    Section = namedtuple('Section',
+                         ['type', 'name', 'address', 'flags', 'size'])
 
     def __init__(self):
         self._segments = []
@@ -26,19 +28,19 @@ class ElfBuilder:
         self._strtab_text = b'\x00.strtab\x00'
 
         self.add_section(self._structs.Elf_SectionType.SHT_NULL, 0,
-            0, 0, 0)
+                         0, 0, 0)
 
     def set_endianity(self, endianity):
         self._endianity = endianity
-        self._structs = ElfStructs(endianity)        
+        self._structs = ElfStructs(endianity)
 
     def add_segment(self, address, contents, flags):
         self._e_phnum += 1
         self._e_shoff += self._e_phentsize + len(contents)
 
         segment = self.Segment(address=address,
-           flags=flags,
-           contents=contents)
+                               flags=flags,
+                               contents=contents)
 
         self._segments.append(segment)
 
@@ -50,7 +52,8 @@ class ElfBuilder:
             # skip program header
             offset += self._e_phentsize
 
-            if (segment.address <= address) and (segment.address + len(segment.contents) >= address):
+            if (segment.address <= address) and (
+                    segment.address + len(segment.contents) >= address):
                 offset += address - segment.address
                 data = segment.contents[address - segment.address:]
             else:
@@ -72,31 +75,34 @@ class ElfBuilder:
                 self._strtab_text += name.encode() + b'\x00'
 
         # create segment for the section if necessary
-        if type_ in (self._structs.Elf_SectionType.SHT_PROGBITS, ):
+        if type_ in (self._structs.Elf_SectionType.SHT_PROGBITS,):
             if self.find_loaded_data(address) is None:
-                raise Exception("section of type SHT_PROGBITS not inside any segment")
+                raise Exception(
+                    "section of type SHT_PROGBITS not inside any segment")
 
         section = self.Section(
             name=name,
             type=type_,
-            address=address, 
-            size=size, 
+            address=address,
+            size=size,
             flags=flags)
 
         self._e_shnum += 1
         self._sections.append(section)
 
     def add_code_section(self, name, address, size):
-        self.add_section(self._structs.Elf_SectionType.SHT_PROGBITS, address, size,
-            name, elf_consts.SHF_ALLOC | elf_consts.SHF_EXECINSTR)
+        self.add_section(self._structs.Elf_SectionType.SHT_PROGBITS, address,
+                         size,
+                         name, elf_consts.SHF_ALLOC | elf_consts.SHF_EXECINSTR)
 
     def add_empty_data_section(self, name, address, size):
-        self.add_section(self._structs.Elf_SectionType.SHT_NOBITS, address, size, 
-            name, elf_consts.SHF_ALLOC | elf_consts.SHF_WRITE)
+        self.add_section(self._structs.Elf_SectionType.SHT_NOBITS, address,
+                         size,
+                         name, elf_consts.SHF_ALLOC | elf_consts.SHF_WRITE)
 
     def _add_string_section(self):
-        self.add_section(self._structs.Elf_SectionType.SHT_STRTAB, 0, 
-            len(self._strtab_text), 1, elf_consts.SHF_ALLOC)
+        self.add_section(self._structs.Elf_SectionType.SHT_STRTAB, 0,
+                         len(self._strtab_text), 1, elf_consts.SHF_ALLOC)
 
     def set_machine(self, machine):
         self._machine = machine
@@ -169,12 +175,13 @@ class ElfBuilder:
                 if type(section.name) is int:
                     sh_name = section.name
                 else:
-                    sh_name = self._strtab_text.find(section.name.encode() + b'\x00')
+                    sh_name = self._strtab_text.find(
+                        section.name.encode() + b'\x00')
 
             if section.type == self._structs.Elf_SectionType.SHT_PROGBITS:
                 size = section.size
                 offset, contents = self.find_loaded_data(section.address, size)
-            else:  
+            else:
                 # every non-loaded data into memory, which resides only in ELF
                 # will be pointed by `end_of_segments_offset`.
                 # we can append data there
@@ -208,4 +215,3 @@ class ElfBuilder:
             })
 
         return structs.Elf32.build(elf)
-
