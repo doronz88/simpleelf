@@ -1,6 +1,7 @@
 from construct import (Int8ub, Int8ul, Int16ul, Int32ul, Int16ub, Int32ub,
                        Enum, Hex, If, Struct, this, Pointer, Bytes,
-                       Const, Default, Padding, Array)
+                       Const, Default, Padding, Array, Int64ul, Int64ub)
+
 from simpleelf import elf_consts
 
 
@@ -9,11 +10,32 @@ class ElfStructs:
         if endianity == '<':
             Int8u = Int8ul
             Int16u = Int16ul
+            # Int32s = Int32sl
             Int32u = Int32ul
+            # Int64s = Int64sl
+            Int64u = Int64ul
         else:
             Int8u = Int8ub
             Int16u = Int16ub
+            # Int32s = Int32sb
             Int32u = Int32ub
+            # Int64s = Int64sb
+            Int64u = Int64ub
+
+        Elf32_Addr = Int32u
+        # Elf32_Half = Int16u
+        Elf32_Off = Int32u
+        # Elf32_Sword = Int32s
+        Elf32_Word = Int32u
+
+        Elf64_Addr = Int64u
+        # Elf64_Half = Int16u
+        # Elf64_SHalf = Int16u
+        Elf64_Off = Int64u
+        # Elf64_Sword = Int32s
+        Elf64_Word = Int32u
+        Elf64_Xword = Int64u
+        # Elf64_Sxword = Int64s
 
         self.Elf_Class = Enum(Hex(Int8u),
                               ELFCLASSNONE=elf_consts.ELFCLASSNONE,
@@ -290,13 +312,26 @@ class ElfStructs:
 
         self.Elf32_Phdr = Struct(
             'p_type' / self.Elf_SegmentType,
-            'p_offset' / Hex(Int32u),
-            'p_vaddr' / Hex(Int32u),
-            'p_paddr' / Hex(Int32u),
-            'p_filesz' / Hex(Int32u),
-            'p_memsz' / Hex(Int32u),
-            'p_flags' / Hex(Int32u),
-            'p_align' / Hex(Int32u),
+            'p_offset' / Hex(Elf32_Off),
+            'p_vaddr' / Hex(Elf32_Addr),
+            'p_paddr' / Hex(Elf32_Addr),
+            'p_filesz' / Hex(Elf32_Word),
+            'p_memsz' / Hex(Elf32_Word),
+            'p_flags' / Hex(Elf32_Word),
+            'p_align' / Hex(Elf32_Word),
+            'data' / If(this.p_type == self.Elf_SegmentType.PT_LOAD,
+                        Pointer(this.p_offset, Bytes(this.p_filesz)))
+        )
+
+        self.Elf64_Phdr = Struct(
+            'p_type' / self.Elf_SegmentType,
+            'p_flags' / Hex(Elf64_Word),
+            'p_offset' / Hex(Elf64_Off),
+            'p_vaddr' / Hex(Elf64_Addr),
+            'p_paddr' / Hex(Elf64_Addr),
+            'p_filesz' / Hex(Elf64_Xword),
+            'p_memsz' / Hex(Elf64_Xword),
+            'p_align' / Hex(Elf64_Xword),
             'data' / If(this.p_type == self.Elf_SegmentType.PT_LOAD,
                         Pointer(this.p_offset, Bytes(this.p_filesz)))
         )
@@ -327,6 +362,32 @@ class ElfStructs:
             'e_shstrndx' / Hex(Int16u),
         )
 
+        self.Elf64_Ehdr = Struct(
+            'e_ident' / Struct(
+                'magic' / Const(elf_consts.ELFMAG),
+                'class' / self.Elf_Class,
+                'data' / self.Elf_Data,
+                'version' / Default(self.Elf_Version,
+                                    self.Elf_Version.EV_CURRENT),
+                'osabi' / self.Elf_OsAbi,
+                'pad' / Padding(8),
+            ),
+            'e_type' / Default(self.Elf_Type, self.Elf_Type.ET_EXEC),
+            'e_machine' / Hex(self.Elf_Machine),
+            'e_version' / Default(self.Elf_Version2,
+                                  self.Elf_Version2.EV_CURRENT),
+            'e_entry' / Hex(Elf64_Addr),
+            'e_phoff' / Hex(Elf64_Off),
+            'e_shoff' / Hex(Elf64_Off),
+            'e_flags' / Default(Hex(Int32u), 0),
+            'e_ehsize' / Hex(Int16u),
+            'e_phentsize' / Hex(Int16u),
+            'e_phnum' / Hex(Int16u),
+            'e_shentsize' / Hex(Int16u),
+            'e_shnum' / Hex(Int16u),
+            'e_shstrndx' / Hex(Int16u),
+        )
+
         self.Elf32_Shdr = Struct(
             'sh_name' / self.Elf_SectionIndex,
             'sh_type' / self.Elf_SectionType,
@@ -342,10 +403,33 @@ class ElfStructs:
                         Pointer(this.sh_offset, Bytes(this.sh_size)))
         )
 
+        self.Elf64_Shdr = Struct(
+            'sh_name' / self.Elf_SectionIndex,
+            'sh_type' / self.Elf_SectionType,
+            'sh_flags' / Hex(Elf64_Xword),
+            'sh_addr' / Hex(Elf64_Addr),
+            'sh_offset' / Hex(Elf64_Off),
+            'sh_size' / Hex(Elf64_Xword),
+            'sh_link' / Hex(Elf64_Word),
+            'sh_info' / Hex(Elf64_Word),
+            'sh_addralign' / Hex(Elf64_Xword),
+            'sh_entsize' / Hex(Elf64_Xword),
+            'data' / If(this.sh_type != self.Elf_SectionType.SHT_NOBITS,
+                        Pointer(this.sh_offset, Bytes(this.sh_size)))
+        )
+
         self.Elf32 = Struct(
             'header' / self.Elf32_Ehdr,
             'segments' / Pointer(this.header.e_phoff,
                                  Array(this.header.e_phnum, self.Elf32_Phdr)),
             'sections' / Pointer(this.header.e_shoff,
                                  Array(this.header.e_shnum, self.Elf32_Shdr)),
+        )
+
+        self.Elf64 = Struct(
+            'header' / self.Elf64_Ehdr,
+            'segments' / Pointer(this.header.e_phoff,
+                                 Array(this.header.e_phnum, self.Elf64_Phdr)),
+            'sections' / Pointer(this.header.e_shoff,
+                                 Array(this.header.e_shnum, self.Elf64_Shdr)),
         )

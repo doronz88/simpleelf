@@ -1,6 +1,7 @@
 from collections import namedtuple
 
 from construct import Padding
+from simpleelf.elf_consts import ELFCLASS32
 
 from simpleelf.elf_structs import ElfStructs
 from simpleelf import elf_consts
@@ -11,17 +12,24 @@ class ElfBuilder:
     Section = namedtuple('Section',
                          ['type', 'name', 'address', 'flags', 'size'])
 
-    def __init__(self):
+    def __init__(self, elf_class=ELFCLASS32):
+        self._class = elf_class
         self._segments = []
         self._sections = []
         self._machine = 0
         self._entry = 0
         self._endianity = '<'
         self._structs = ElfStructs(self._endianity)
-        self._e_ehsize = self._structs.Elf32_Ehdr.sizeof()
-        self._e_phoff = self._e_ehsize
-        self._e_phentsize = 0x20  # TODO: calculate according to the struct
-        self._e_shentsize = 0x28  # TODO: calculate according to the struct
+        if elf_class == ELFCLASS32:
+            self._e_ehsize = self._structs.Elf32_Ehdr.sizeof()
+            self._e_phoff = self._e_ehsize
+            self._e_phentsize = 0x20  # TODO: calculate according to the struct
+            self._e_shentsize = 0x28  # TODO: calculate according to the struct
+        else:
+            self._e_ehsize = self._structs.Elf64_Ehdr.sizeof()
+            self._e_phoff = self._e_ehsize
+            self._e_phentsize = 0x38  # TODO: calculate according to the struct
+            self._e_shentsize = 0x40  # TODO: calculate according to the struct
         self._e_phnum = 0
         self._e_shnum = 0
         self._e_shoff = self._e_phoff + self._e_phentsize * self._e_phnum
@@ -125,7 +133,7 @@ class ElfBuilder:
             'header': {
                 'e_ident': {
                     'magic': elf_consts.ELFMAG,
-                    'class': elf_consts.ELFCLASS32,
+                    'class': self._class,
                     'data': e_ident_data,
                     'osabi': elf_consts.ELFOSABI_NONE,
                     'pad': Padding(8),
@@ -214,4 +222,4 @@ class ElfBuilder:
                 'data': contents
             })
 
-        return structs.Elf32.build(elf)
+        return structs.Elf32.build(elf) if self._class == ELFCLASS32 else structs.Elf64.build(elf)
