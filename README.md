@@ -42,7 +42,8 @@ Try it out:
 ```python
 from simpleelf.elf_structs import ElfStructs
 
-ElfStructs('<').Elf32.parse(elf_buffer) # outputs a constucts' container
+ElfStructs('<').Elf32.parse(elf32_buffer) # outputs a constucts' container
+ElfStructs('<').Elf64.parse(elf64_buffer) # outputs a constucts' container
 ```
 
 ## Building from scratch
@@ -54,7 +55,7 @@ Try it out:
 from simpleelf.elf_builder import ElfBuilder
 from simpleelf import elf_consts
 
-# can also be used with ELFCLASS32 to create 64bit layouts
+# can also be used with ELFCLASS64 to create 64bit layouts
 e = ElfBuilder(elf_consts.ELFCLASS32)
 e.set_endianity('<')
 e.set_machine(elf_consts.EM_ARM)
