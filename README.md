@@ -54,7 +54,8 @@ Try it out:
 from simpleelf.elf_builder import ElfBuilder
 from simpleelf import elf_consts
 
-e = ElfBuilder()
+# can also be used with ELFCLASS32 to create 64bit layouts
+e = ElfBuilder(elf_consts.ELFCLASS32)
 e.set_endianity('<')
 e.set_machine(elf_consts.EM_ARM)
 
