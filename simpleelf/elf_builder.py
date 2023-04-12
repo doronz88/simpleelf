@@ -16,6 +16,7 @@ class ElfBuilder:
         self._class = elf_class
         self._segments = []
         self._sections = []
+        self._e_type = elf_consts.ET_EXEC
         self._machine = 0
         self._entry = 0
         self._endianity = '<'
@@ -118,6 +119,9 @@ class ElfBuilder:
     def set_entry(self, entry):
         self._entry = entry
 
+    def set_type(self, e_type):
+        self._e_type = e_type
+
     def build(self):
         structs = self._structs
 
@@ -138,7 +142,7 @@ class ElfBuilder:
                     'osabi': elf_consts.ELFOSABI_NONE,
                     'pad': Padding(8),
                 },
-                'e_type': elf_consts.ET_EXEC,
+                'e_type': self._e_type,
                 'e_machine': self._machine,
                 'e_version': elf_consts.EV_CURRENT,
                 'e_entry': self._entry,
