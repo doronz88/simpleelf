@@ -264,3 +264,4 @@ EM_FT32 = 222  # FTDI Chip FT32 high performance 32-bit RISC architecture
 EM_MOXIE = 223  # Moxie processor family
 EM_AMDGPU = 224  # AMD GPU architecture
 EM_RISCV = 243  # RISC-V
+EM_BPF = 247  # Linux BPF - in-kernel virtual machine
