@@ -1,17 +1,19 @@
 from collections import namedtuple
+from typing import Optional, Tuple, Union
+
 from construct import Padding
 
 from simpleelf import elf_consts
 from simpleelf.elf_consts import ELFCLASS32
 from simpleelf.elf_structs import ElfStructs
 
+Segment = namedtuple('Segment', ['address', 'flags', 'contents'])
+Section = namedtuple('Section', ['type', 'name', 'address', 'flags', 'size'])
+
 
 class ElfBuilder:
-    Segment = namedtuple('Segment', ['address', 'flags', 'contents'])
-    Section = namedtuple('Section',
-                         ['type', 'name', 'address', 'flags', 'size'])
 
-    def __init__(self, elf_class=ELFCLASS32):
+    def __init__(self, elf_class: int = ELFCLASS32):
         self._class = elf_class
         self._segments = []
         self._sections = []
@@ -35,24 +37,31 @@ class ElfBuilder:
         self._e_shoff = self._e_phoff + self._e_phentsize * self._e_phnum
         self._strtab_text = b'\x00.strtab\x00'
 
-        self.add_section(self._structs.Elf_SectionType.SHT_NULL, 0,
-                         0, 0, 0)
+        self._add_section(self._structs.Elf_SectionType.SHT_NULL, 0, 0, 0, 0)
 
-    def set_endianity(self, endianity):
+    def set_endianity(self, endianity: str) -> None:
+        """
+        Set endianity
+
+        :param endianity: Either '<' for LE or '>' for BE
+        :return: None
+        """
         self._endianity = endianity
         self._structs = ElfStructs(endianity)
 
-    def add_segment(self, address, contents, flags):
+    def add_segment(self, address: int, contents: bytes, flags: int) -> None:
         self._e_phnum += 1
         self._e_shoff += self._e_phentsize + len(contents)
+        self._segments.append(Segment(address=address, flags=flags, contents=contents))
 
-        segment = self.Segment(address=address,
-                               flags=flags,
-                               contents=contents)
+    def find_loaded_data(self, address: int, size: Optional[int] = None) -> Optional[Tuple[int, bytes]]:
+        """
+        Searches the entire ELF memory layout for the data loaded at a given address
 
-        self._segments.append(segment)
-
-    def find_loaded_data(self, address, size=None):
+        :param address: Address to search for
+        :param size: Size of data to read from that address
+        :return: None of address isn't mapped or a tuple of the offset within the ELF file and the actual data
+        """
         offset = self._e_phoff
         data = None
 
@@ -60,8 +69,7 @@ class ElfBuilder:
             # skip program header
             offset += self._e_phentsize
 
-            if (segment.address <= address) and (
-                    segment.address + len(segment.contents) >= address):
+            if (segment.address <= address) and (segment.address + len(segment.contents) >= address):
                 offset += address - segment.address
                 data = segment.contents[address - segment.address:]
             else:
@@ -77,52 +85,46 @@ class ElfBuilder:
 
         return offset, data
 
-    def add_section(self, type_, address, size, name, flags):
-        if name is not None:
-            if type(name) is str:
-                self._strtab_text += name.encode() + b'\x00'
+    def add_code_section(self, address: int, size: int, writeable: bool = False,
+                         name: Optional[Union[str, int]] = None) -> None:
+        """
+        Add code section
 
-        # create segment for the section if necessary
-        if type_ in (self._structs.Elf_SectionType.SHT_PROGBITS,):
-            if self.find_loaded_data(address) is None:
-                raise Exception(
-                    "section of type SHT_PROGBITS not inside any segment")
-
-        section = self.Section(
-            name=name,
-            type=type_,
-            address=address,
-            size=size,
-            flags=flags)
-
-        self._e_shnum += 1
-        self._sections.append(section)
-
-    def add_code_section(self, name: str, address: int, size: int, writeable: bool = False):
+        :param address: Section address
+        :param size: Section size
+        :param writeable: Determine if section is writable
+        :param name: Section's name (either None, string name, or an offset from .strtab)
+        :return: None
+        """
         flags = elf_consts.SHF_ALLOC | elf_consts.SHF_EXECINSTR
         if writeable:
             flags |= elf_consts.SHF_WRITE
-        self.add_section(self._structs.Elf_SectionType.SHT_PROGBITS, address, size, name, flags)
+        self._add_section(self._structs.Elf_SectionType.SHT_PROGBITS, address, size, flags, name=name)
 
-    def add_empty_data_section(self, name, address, size):
-        self.add_section(self._structs.Elf_SectionType.SHT_NOBITS, address,
-                         size,
-                         name, elf_consts.SHF_ALLOC | elf_consts.SHF_WRITE)
+    def add_empty_data_section(self, address: int, size: int, name: Optional[Union[str, int]] = None) -> None:
+        """
+        Add an empty data section (usually for .bss)
 
-    def _add_string_section(self):
-        self.add_section(self._structs.Elf_SectionType.SHT_STRTAB, 0,
-                         len(self._strtab_text), 1, elf_consts.SHF_ALLOC)
+        :param address: Section's address
+        :param size: Section's size
+        :param name: Section's name (either None, string name, or an offset from .strtab)
+        :return:
+        """
+        self._add_section(self._structs.Elf_SectionType.SHT_NOBITS, address, size,
+                          elf_consts.SHF_ALLOC | elf_consts.SHF_WRITE, name=name)
 
-    def set_machine(self, machine):
+    def set_machine(self, machine: int) -> None:
+        """ Set machine type """
         self._machine = machine
 
-    def set_entry(self, entry):
+    def set_entry(self, entry: int) -> None:
+        """ Set entrypoint address """
         self._entry = entry
 
-    def set_type(self, e_type):
+    def set_type(self, e_type: int) -> None:
         self._e_type = e_type
 
-    def build(self):
+    def build(self) -> bytes:
         structs = self._structs
 
         # append strtab as the last section
@@ -187,8 +189,7 @@ class ElfBuilder:
                 if type(section.name) is int:
                     sh_name = section.name
                 else:
-                    sh_name = self._strtab_text.find(
-                        section.name.encode() + b'\x00')
+                    sh_name = self._strtab_text.find(section.name.encode() + b'\x00')
 
             if section.type == self._structs.Elf_SectionType.SHT_PROGBITS:
                 size = section.size
@@ -227,3 +228,38 @@ class ElfBuilder:
             })
 
         return structs.Elf32.build(elf) if self._class == ELFCLASS32 else structs.Elf64.build(elf)
+
+    def _add_section(self, type_, address: int, size: int, flags: int, name: Optional[Union[str, int]] = None) -> None:
+        """
+        Add section
+
+        :param type_: A value from Elf_SectionType enum
+        :param address: Section's address
+        :param size: Section's size
+        :param flags: Section's flags
+        :param name: Section's name (either None, string name, or an offset from .strtab)
+        :return: None
+        """
+        if name is not None:
+            if isinstance(name, str):
+                self._strtab_text += name.encode() + b'\x00'
+
+        # create segment for the section if necessary
+        if type_ in (self._structs.Elf_SectionType.SHT_PROGBITS,):
+            if self.find_loaded_data(address) is None:
+                raise Exception(
+                    "section of type SHT_PROGBITS not inside any segment")
+
+        section = Section(
+            name=name,
+            type=type_,
+            address=address,
+            size=size,
+            flags=flags)
+
+        self._e_shnum += 1
+        self._sections.append(section)
+
+    def _add_string_section(self) -> None:
+        """ Add string section (.strtab) """
+        self._add_section(self._structs.Elf_SectionType.SHT_STRTAB, 0, len(self._strtab_text), 1, elf_consts.SHF_ALLOC)

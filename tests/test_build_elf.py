@@ -1,7 +1,6 @@
-from simpleelf.elf_consts import ELFCLASS64
-
-from simpleelf.elf_builder import ElfBuilder, ElfStructs
 from simpleelf import elf_consts
+from simpleelf.elf_builder import ElfBuilder, ElfStructs
+from simpleelf.elf_consts import ELFCLASS64
 
 structs = ElfStructs('<')
 
@@ -26,7 +25,7 @@ def test_build_elf32():
     # add a code section inside the first segment
     code_address = text_address + text_buffer.find(code)  # point at CODECODE
     code_size = len(code)
-    e.add_code_section('.text', code_address, code_size)
+    e.add_code_section(code_address, code_size, name='.text')
 
     # set entry point
     e.set_entry(code_address)
@@ -35,7 +34,7 @@ def test_build_elf32():
     # file
     bss_address = 0x5678
     bss_size = 0x200
-    e.add_empty_data_section('.bss', bss_address, bss_size)
+    e.add_empty_data_section(bss_address, bss_size, name='.bss')
 
     elf_raw = e.build()
     parsed_raw_elf = structs.Elf32.parse(elf_raw)
@@ -64,7 +63,7 @@ def test_build_elf64():
     # add a code section inside the first segment
     code_address = text_address + text_buffer.find(code)  # point at CODECODE
     code_size = len(code)
-    e.add_code_section('.text', code_address, code_size)
+    e.add_code_section(code_address, code_size, name='.text')
 
     # set entry point
     e.set_entry(code_address)
@@ -73,7 +72,7 @@ def test_build_elf64():
     # file
     bss_address = 0x5678
     bss_size = 0x200
-    e.add_empty_data_section('.bss', bss_address, bss_size)
+    e.add_empty_data_section(bss_address, bss_size, name='.bss')
 
     elf_raw = e.build()
     open('/tmp/foo', 'wb').write(elf_raw)
