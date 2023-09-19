@@ -1,10 +1,9 @@
 from collections import namedtuple
-
 from construct import Padding
-from simpleelf.elf_consts import ELFCLASS32
 
-from simpleelf.elf_structs import ElfStructs
 from simpleelf import elf_consts
+from simpleelf.elf_consts import ELFCLASS32
+from simpleelf.elf_structs import ElfStructs
 
 
 class ElfBuilder:
