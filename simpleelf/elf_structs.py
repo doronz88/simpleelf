@@ -1,6 +1,5 @@
-from construct import (Int8ub, Int8ul, Int16ul, Int32ul, Int16ub, Int32ub,
-                       Enum, Hex, If, Struct, this, Pointer, Bytes,
-                       Const, Default, Padding, Array, Int64ul, Int64ub)
+from construct import Array, Bytes, Const, Default, Enum, Hex, If, Int8ub, Int8ul, Int16ub, Int16ul, Int32ub, Int32ul, \
+    Int64ub, Int64ul, Padding, Pointer, Struct, this
 
 from simpleelf import elf_consts
 
