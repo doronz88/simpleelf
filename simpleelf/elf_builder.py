@@ -99,10 +99,11 @@ class ElfBuilder:
         self._e_shnum += 1
         self._sections.append(section)
 
-    def add_code_section(self, name, address, size):
-        self.add_section(self._structs.Elf_SectionType.SHT_PROGBITS, address,
-                         size,
-                         name, elf_consts.SHF_ALLOC | elf_consts.SHF_EXECINSTR)
+    def add_code_section(self, name: str, address: int, size: int, writeable: bool = False):
+        flags = elf_consts.SHF_ALLOC | elf_consts.SHF_EXECINSTR
+        if writeable:
+            flags |= elf_consts.SHF_WRITE
+        self.add_section(self._structs.Elf_SectionType.SHT_PROGBITS, address, size, name, flags)
 
     def add_empty_data_section(self, name, address, size):
         self.add_section(self._structs.Elf_SectionType.SHT_NOBITS, address,
