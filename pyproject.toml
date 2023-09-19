@@ -1,6 +1,6 @@
 [project]
 name = "simpleelf"
-version = "0.1.12"
+version = "1.0.0"
 description = "Simple ELF parser and builder"
 readme = "README.md"
 requires-python = ">=3.8"
