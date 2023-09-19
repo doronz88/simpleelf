@@ -14,8 +14,6 @@ Pull Requests are of course more than welcome :smirk:.
 
 # Installation
 
-Support: Python 2.7 and Python 3.x.
-
 Use `pip`:
 
 ```bash
@@ -27,7 +25,7 @@ Or clone yourself and build:
 ```bash
 git clone git@github.com:doronz88/simpleelf.git
 cd simpleelf
-python setup.py install
+python -m pip install -e . -U
 ```
 
 # Running
@@ -75,7 +73,7 @@ e.add_segment(0x88771122, b'data in 0x88771122',
 # add a code section inside the first segment
 code_address = text_address + text_buffer.find(code)  # point at CODECODE
 code_size = len(code)
-e.add_code_section('.text', code_address, code_size)
+e.add_code_section(code_address, code_size, name='.text')
 
 # set entry point
 e.set_entry(code_address)
@@ -84,7 +82,7 @@ e.set_entry(code_address)
 # file
 bss_address = 0x5678
 bss_size = 0x200
-e.add_empty_data_section('.bss', bss_address, bss_size)
+e.add_empty_data_section(bss_address, bss_size, name='.bss')
 
 # get raw elf
 e.build()
